@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 
 /**
@@ -21,17 +22,21 @@ public class BrowserModel {
     private int myCurrentIndex;
     private List<URL> myHistory;
     private Map<String, URL> myFavorites;
+    private BrowserException errorMsg;
+    public static final String DEFAULT_RESOURCE_PACKAGE = "resources/";
+    private ResourceBundle myResources;
 
 
     /**
      * Creates an empty model.
      */
-    public BrowserModel () {
+    public BrowserModel (String language) {
         myHome = null;
         myCurrentURL = null;
         myCurrentIndex = -1;
         myHistory = new ArrayList<>();
         myFavorites = new HashMap<>();
+        myResources = ResourceBundle.getBundle(DEFAULT_RESOURCE_PACKAGE + language);
     }
 
     /**
@@ -42,7 +47,9 @@ public class BrowserModel {
             myCurrentIndex++;
             return myHistory.get(myCurrentIndex);
         }
-        return null;
+        else{
+        	throw new BrowserException("HistoryError");
+        }
     }
 
     /**
@@ -53,13 +60,16 @@ public class BrowserModel {
             myCurrentIndex--;
             return myHistory.get(myCurrentIndex);
         }
-        return null;
+        else{
+        	throw new BrowserException("BackError");
+        }
     }
 
     /**
      * Changes current page to given URL, removing next history.
      */
     public URL go (String url) {
+    	
         try {
             URL tmp = completeURL(url);
             // unfortunately, completeURL may not have returned a valid URL, so test it
@@ -76,7 +86,7 @@ public class BrowserModel {
             return myCurrentURL;
         }
         catch (Exception e) {
-            return null;
+            throw new BrowserException(String.format(myResources.getString("ErrorOnGo"), url));
         }
     }
 
@@ -109,6 +119,9 @@ public class BrowserModel {
         if (myCurrentURL != null) {
             myHome = myCurrentURL;
         }
+        else{
+        	throw new BrowserException("ErrorHome");
+        }
     }
 
     /**
@@ -119,6 +132,9 @@ public class BrowserModel {
         if (name != null && !name.equals("") && myCurrentURL != null) {
             myFavorites.put(name, myCurrentURL);
         }
+        else{
+        	throw new BrowserException("NotInFav");
+        }
     }
 
     /**
@@ -128,7 +144,9 @@ public class BrowserModel {
         if (name != null && !name.equals("") && myFavorites.containsKey(name)) {
             return myFavorites.get(name);
         }
-        return null;
+        else{
+        	throw new BrowserException("NotInFav");
+        }
     }
 
     // deal with a potentially incomplete URL
@@ -150,5 +168,8 @@ public class BrowserModel {
                 }
             }
         }
+		catch(Exception e){
+			throw new IllegalArgumentException();
+		}
     }
 }

@@ -45,7 +45,7 @@ import org.w3c.dom.events.EventTarget;
  */
 public class BrowserView {
     // constants
-    public static final Dimension DEFAULT_SIZE = new Dimension(800, 600);
+    public static final Dimension DEFAULT_SIZE = new Dimension(1000, 600);
     public static final String DEFAULT_RESOURCE_PACKAGE = "resources/";
     public static final String STYLESHEET = "default.css";
     public static final String BLANK = " ";
@@ -61,6 +61,7 @@ public class BrowserView {
     private Button myBackButton;
     private Button myNextButton;
     private Button myHomeButton;
+    private Button addFav;
     // favorites
     private ComboBox<String> myFavorites;
     // get strings from resource file
@@ -84,19 +85,19 @@ public class BrowserView {
         enableButtons();
         // create scene to hold UI
         myScene = new Scene(root, DEFAULT_SIZE.width, DEFAULT_SIZE.height);
-        //myScene.getStylesheets().add(DEFAULT_RESOURCE_PACKAGE + STYLESHEET);
+        myScene.getStylesheets().add(DEFAULT_RESOURCE_PACKAGE + STYLESHEET);
     }
 
     /**
      * Display given URL.
      */
     public void showPage (String url) {
-        URL valid = myModel.go(url);
-        if (valid != null) {
-            update(valid);
-        }
-        else {
-            showError("Could not load " + url);
+    	try{
+	        URL valid = myModel.go(url);
+	        update(valid);
+    	}
+        catch(BrowserException e) {
+            showError(e.getMessage());
         }
     }
 
@@ -172,6 +173,7 @@ public class BrowserView {
         myBackButton.setDisable(! myModel.hasPrevious());
         myNextButton.setDisable(! myModel.hasNext());
         myHomeButton.setDisable(myModel.getHome() == null);
+        //addFav.setDisable(false);
     }
 
     // convenience method to create HTML page display
@@ -221,6 +223,7 @@ public class BrowserView {
         return result;
     }
 
+
     // make buttons for setting favorites/home URLs
     private Node makePreferencesPanel () {
         HBox result = new HBox();
@@ -230,6 +233,9 @@ public class BrowserView {
             myModel.setHome();
             enableButtons();
         }));
+        addFav = makeButton("FavoritePromptTitle", event -> addFavorite());
+        result.getChildren().add(addFav);
+        result.getChildren().add(myFavorites);
         return result;
     }
 
